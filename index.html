@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factorizadora Pro - GitHub Edition</title>
+    <title>Factorizadora - Simple & Pro</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.4.0/algebrite.bundle-for-browser.min.js"></script>
@@ -11,7 +11,6 @@
 
     <style>
         :root {
-            --accent-color: #000000;
             --bg-container: #F2F2F2;
             --white: #ffffff;
         }
@@ -30,7 +29,7 @@
             padding: 40px; 
             border-radius: 40px; 
             width: 100%; 
-            max-width: 700px; 
+            max-width: 600px; 
             display: flex; 
             flex-direction: column; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.05);
@@ -43,7 +42,7 @@
 
         .header h1 { 
             font-family: 'Playfair Display', serif; 
-            font-size: 36px; 
+            font-size: 42px; 
             margin: 0; 
             color: #1a1a1a;
         }
@@ -56,74 +55,72 @@
             margin-top: 5px;
         }
 
-        /* Visor en tiempo real (Arriba del input) */
+        /* Visor de entrada */
         .preview-area {
-            background: rgba(255,255,255,0.5);
-            margin-bottom: 10px;
-            padding: 15px;
-            border-radius: 20px 20px 5px 5px;
-            min-height: 60px;
+            background: rgba(255,255,255,0.6);
+            margin-bottom: 0;
+            padding: 20px;
+            border-radius: 25px 25px 0 0;
+            min-height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 24px;
             color: #333;
             border: 1px dashed #ccc;
+            border-bottom: none;
         }
 
         #algebra-input {
             width: 100%;
             padding: 20px;
             border: 2px solid #ddd;
-            border-radius: 5px 5px 20px 20px;
+            border-radius: 0 0 25px 25px;
             font-size: 22px;
             outline: none;
             text-align: center;
             font-family: 'Open Sans', sans-serif;
             margin-bottom: 30px;
             box-sizing: border-box;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
         }
 
         #algebra-input:focus {
-            border-color: var(--accent-color);
+            border-color: #000;
+            background: #fff;
         }
 
-        /* Resultados */
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
+        /* Resultado Único */
+        .result-card {
             background: var(--white);
-            padding: 25px;
-            border-radius: 30px;
+            padding: 30px;
+            border-radius: 35px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            min-height: 150px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            min-height: 140px;
         }
 
         .card-label {
-            font-size: 12px;
+            font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #aaa;
+            letter-spacing: 2px;
+            color: #bbb;
             margin-bottom: 15px;
             font-weight: 700;
         }
 
-        .math-text {
-            font-size: 20px;
+        #res-factor {
+            font-size: 26px;
             color: #000;
         }
 
-        @media (max-width: 600px) {
-            .results-grid { grid-template-columns: 1fr; }
+        .error-msg {
+            color: #ff3b30;
+            font-size: 14px;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -131,76 +128,57 @@
 
 <div class="container">
     <div class="header">
-        <h1>Factorizadora Pro</h1>
+        <h1>Factorizadora</h1>
         <div class="main-subtitle">√(Raíz) Cuadrada²</div>
     </div>
 
     <div class="preview-area" id="input-preview">
-        $$ \text{Escribe un polinomio...} $$
+        \( \dots \)
     </div>
 
-    <input type="text" id="algebra-input" placeholder="Ej: x^2 + 5x + 6" autocomplete="off" oninput="process()">
+    <input type="text" id="algebra-input" placeholder="Escribe tu polinomio (ej: x^2 + 6x + 9)" autocomplete="off" oninput="process()">
 
-    <div class="results-grid">
-        <div class="card">
-            <div class="card-label">Factorización</div>
-            <div id="res-factor" class="math-text">$$ ... $$</div>
-        </div>
-        <div class="card">
-            <div class="card-label">Solución (Raíces)</div>
-            <div id="res-roots" class="math-text">$$ ... $$</div>
-        </div>
+    <div class="result-card">
+        <div class="card-label">Factorización</div>
+        <div id="res-factor">\( \dots \)</div>
     </div>
 </div>
 
 <script>
     function process() {
-        const rawInput = document.getElementById('algebra-input').value.trim();
+        const input = document.getElementById('algebra-input').value.trim();
         const preview = document.getElementById('input-preview');
         const resFactor = document.getElementById('res-factor');
-        const resRoots = document.getElementById('res-roots');
 
-        if (!rawInput) {
-            preview.innerHTML = "$$ \\text{Escribe un polinomio...} $$";
-            resFactor.innerHTML = "$$ ... $$";
-            resRoots.innerHTML = "$$ ... $$";
+        if (!input) {
+            preview.innerHTML = "\\( \\dots \\)";
+            resFactor.innerHTML = "\\( \\dots \\)";
             MathJax.typeset();
             return;
         }
 
-        // 1. Mostrar Preview de la entrada
-        preview.innerHTML = `\\[ ${rawInput} \\]`;
+        // Mostrar lo que el usuario escribe en formato MathJax
+        preview.innerHTML = `\\[ ${input} \\]`;
 
         try {
-            // 2. Ejecutar cálculos con Algebrite
-            // Forzamos a que trate la entrada como una expresión
-            let factorResult = Algebrite.run(`factor(${rawInput})`).toString();
-            let rootsResult = Algebrite.run(`roots(${rawInput})`).toString();
+            // Intentar factorizar usando Algebrite
+            // Usamos Algebrite.factor() que es más directo para esta tarea
+            let result = Algebrite.factor(input).toString();
 
-            // 3. Formatear para que MathJax no se rompa (quitar asteriscos y corchetes)
-            const clean = (str) => {
-                return str
-                    .replace(/\[/g, '\\{')
-                    .replace(/\]/g, '\\}')
-                    .replace(/\*/g, '')
-                    .replace(/\^/g, '^');
-            };
-
-            resFactor.innerHTML = `\\[ ${clean(factorResult)} \\]`;
-            
-            // Si no hay raíces o es constante
-            if (rootsResult === "roots(" + rawInput + ")") {
-                resRoots.innerHTML = "\\( \\text{Sin raíces reales} \\)";
+            // Si Algebrite devuelve lo mismo que entró, significa que no es factorizable o no terminó
+            if (result === input) {
+                resFactor.innerHTML = "<span style='color:#888; font-size:16px;'>No se puede factorizar más</span>";
             } else {
-                resRoots.innerHTML = `\\[ x = ${clean(rootsResult)} \\]`;
+                // Limpiar el formato de Algebrite (quitar asteriscos de multiplicación)
+                let cleanResult = result.replace(/\*/g, '');
+                resFactor.innerHTML = `\\[ ${cleanResult} \\]`;
             }
-
         } catch (err) {
-            resFactor.innerHTML = "<small style='color:red'>Error en expresión</small>";
-            resRoots.innerHTML = "";
+            // Mientras el usuario escribe, puede haber errores de sintaxis temporales
+            resFactor.innerHTML = "<span class='error-msg'>Esperando expresión completa...</span>";
         }
 
-        // Renderizar todo con MathJax
+        // Renderizar los símbolos
         MathJax.typeset();
     }
 </script>
