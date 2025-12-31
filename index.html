@@ -3,20 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factorizadora - Simple & Pro</title>
+    <title>Factorizadora Pro</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.4.0/algebrite.bundle-for-browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js"></script>
+    
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
 
     <style>
         :root {
-            --bg-container: #F2F2F2;
+            --bg-color: #F8F9FA;
+            --container-bg: #F2F2F2;
             --white: #ffffff;
+            --text-main: #1a1a1a;
         }
 
         body { 
-            background: #fff; 
+            background: var(--bg-color); 
             font-family: 'Open Sans', sans-serif; 
             margin: 0; 
             padding: 40px 20px; 
@@ -25,52 +33,45 @@
         }
 
         .container { 
-            background: var(--bg-container); 
+            background: var(--container-bg); 
             padding: 40px; 
             border-radius: 40px; 
             width: 100%; 
             max-width: 600px; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
         }
 
-        .header { 
-            text-align: center; 
-            margin-bottom: 30px; 
-        }
-
+        .header { text-align: center; margin-bottom: 30px; }
         .header h1 { 
             font-family: 'Playfair Display', serif; 
             font-size: 42px; 
             margin: 0; 
-            color: #1a1a1a;
+            color: var(--text-main);
         }
-
         .main-subtitle {
             font-family: 'Playfair Display', serif;
             font-weight: 700;
-            font-size: 20px;
-            color: #555;
+            font-size: 18px;
+            color: #666;
             margin-top: 5px;
         }
 
-        /* Visor de entrada */
-        .preview-area {
-            background: rgba(255,255,255,0.6);
-            margin-bottom: 0;
-            padding: 20px;
+        /* Visor de Entrada */
+        .preview-box {
+            background: rgba(255,255,255,0.7);
+            border: 1px dashed #bbb;
             border-radius: 25px 25px 0 0;
-            min-height: 70px;
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 15px;
             font-size: 24px;
-            color: #333;
-            border: 1px dashed #ccc;
-            border-bottom: none;
         }
 
+        /* Input Principal */
         #algebra-input {
             width: 100%;
             padding: 20px;
@@ -79,49 +80,37 @@
             font-size: 22px;
             outline: none;
             text-align: center;
-            font-family: 'Open Sans', sans-serif;
-            margin-bottom: 30px;
             box-sizing: border-box;
-            transition: all 0.3s ease;
+            transition: 0.3s;
+            margin-bottom: 25px;
         }
+        #algebra-input:focus { border-color: #000; background: #fff; }
 
-        #algebra-input:focus {
-            border-color: #000;
-            background: #fff;
-        }
-
-        /* Resultado Único */
+        /* Tarjeta de Resultado */
         .result-card {
             background: var(--white);
             padding: 30px;
             border-radius: 35px;
             text-align: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
-            min-height: 150px;
+            min-height: 120px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02);
         }
 
-        .card-label {
-            font-size: 13px;
+        .label {
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: #bbb;
+            color: #aaa;
             margin-bottom: 15px;
             font-weight: 700;
         }
 
-        #res-factor {
-            font-size: 26px;
-            color: #000;
-        }
-
-        .error-msg {
-            color: #ff3b30;
-            font-size: 14px;
-            font-weight: 600;
-        }
+        #output { font-size: 24px; color: #000; }
+        
+        .error-text { color: #ff4757; font-size: 14px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -132,55 +121,55 @@
         <div class="main-subtitle">√(Raíz) Cuadrada²</div>
     </div>
 
-    <div class="preview-area" id="input-preview">
+    <div class="preview-box" id="preview">
         \( \dots \)
     </div>
 
-    <input type="text" id="algebra-input" placeholder="Escribe tu polinomio (ej: x^2 + 6x + 9)" autocomplete="off" oninput="process()">
+    <input type="text" id="algebra-input" placeholder="Ej: x^2 + 6x + 9 o sqrt(x^2-1)" autocomplete="off">
 
     <div class="result-card">
-        <div class="card-label">Factorización</div>
-        <div id="res-factor">\( \dots \)</div>
+        <div class="label">Factorización</div>
+        <div id="output">\( \dots \)</div>
     </div>
 </div>
 
 <script>
-    function process() {
-        const input = document.getElementById('algebra-input').value.trim();
-        const preview = document.getElementById('input-preview');
-        const resFactor = document.getElementById('res-factor');
+    const input = document.getElementById('algebra-input');
+    const preview = document.getElementById('preview');
+    const output = document.getElementById('output');
 
-        if (!input) {
+    input.addEventListener('input', () => {
+        const val = input.value.trim();
+
+        if (!val) {
             preview.innerHTML = "\\( \\dots \\)";
-            resFactor.innerHTML = "\\( \\dots \\)";
-            MathJax.typeset();
+            output.innerHTML = "\\( \\dots \\)";
             return;
         }
 
-        // Mostrar lo que el usuario escribe en formato MathJax
-        preview.innerHTML = `\\[ ${input} \\]`;
-
         try {
-            // Intentar factorizar usando Algebrite
-            // Usamos Algebrite.factor() que es más directo para esta tarea
-            let result = Algebrite.factor(input).toString();
+            // 1. Mostrar Preview (convertimos sqrt para que MathJax lo entienda mejor)
+            let previewText = val.replace(/sqrt/g, '\\sqrt');
+            preview.innerHTML = `\\[ ${previewText} \\]`;
 
-            // Si Algebrite devuelve lo mismo que entró, significa que no es factorizable o no terminó
-            if (result === input) {
-                resFactor.innerHTML = "<span style='color:#888; font-size:16px;'>No se puede factorizar más</span>";
-            } else {
-                // Limpiar el formato de Algebrite (quitar asteriscos de multiplicación)
-                let cleanResult = result.replace(/\*/g, '');
-                resFactor.innerHTML = `\\[ ${cleanResult} \\]`;
-            }
-        } catch (err) {
-            // Mientras el usuario escribe, puede haber errores de sintaxis temporales
-            resFactor.innerHTML = "<span class='error-msg'>Esperando expresión completa...</span>";
+            // 2. Factorizar con Nerdamer
+            // nerdamer.simplify ayuda a resolver potencias como (4+3) antes de factorizar
+            let expression = nerdamer(val).simplify();
+            let factored = nerdamer.factor(expression);
+
+            // 3. Mostrar Resultado en formato LaTeX
+            output.innerHTML = `\\[ ${factored.toTeX()} \\]`;
+
+        } catch (e) {
+            // Error silencioso mientras el usuario termina de escribir
+            output.innerHTML = "<span class='error-text'>Esperando expresión válida...</span>";
         }
 
-        // Renderizar los símbolos
-        MathJax.typeset();
-    }
+        // Actualizar el renderizado de MathJax
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    });
 </script>
 
 </body>
