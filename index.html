@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factorizadora & Solver Pro</title>
+    <title>Factorizadora Pro - GitHub Edition</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/algebrite/1.4.0/algebrite.bundle-for-browser.min.js"></script>
@@ -11,42 +11,39 @@
 
     <style>
         :root {
-            --primary-color: #000000;
+            --accent-color: #000000;
             --bg-container: #F2F2F2;
-            --bg-pill: #e0e0e0;
+            --white: #ffffff;
         }
 
         body { 
             background: #fff; 
             font-family: 'Open Sans', sans-serif; 
             margin: 0; 
-            padding: 20px; 
+            padding: 40px 20px; 
             display: flex; 
             justify-content: center; 
         }
 
         .container { 
             background: var(--bg-container); 
-            padding: 30px; 
+            padding: 40px; 
             border-radius: 40px; 
             width: 100%; 
-            max-width: 850px; 
+            max-width: 700px; 
             display: flex; 
             flex-direction: column; 
-            align-items: center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
         }
 
         .header { 
             text-align: center; 
-            margin-bottom: 25px; 
-            width: 100%; 
-            position: relative; 
+            margin-bottom: 30px; 
         }
 
         .header h1 { 
             font-family: 'Playfair Display', serif; 
-            font-size: 32px; 
+            font-size: 36px; 
             margin: 0; 
             color: #1a1a1a;
         }
@@ -54,119 +51,79 @@
         .main-subtitle {
             font-family: 'Playfair Display', serif;
             font-weight: 700;
-            font-size: 18px;
+            font-size: 20px;
             color: #555;
             margin-top: 5px;
-            margin-bottom: 15px;
         }
 
-        /* Botones de Control superiores */
-        .controls {
-            position: absolute;
-            top: 0;
-            right: 0;
+        /* Visor en tiempo real (Arriba del input) */
+        .preview-area {
+            background: rgba(255,255,255,0.5);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 20px 20px 5px 5px;
+            min-height: 60px;
             display: flex;
-            gap: 10px;
             align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #333;
+            border: 1px dashed #ccc;
         }
 
-        .btn-clear {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #999;
-            transition: 0.2s;
-        }
-        .btn-clear:hover { color: #FF3B30; transform: scale(1.1); }
-
-        .color-trigger {
-            width: 20px;
-            height: 20px;
-            background: var(--primary-color);
-            border-radius: 4px;
-            cursor: pointer;
-            border: 2px solid #fff;
-        }
-
-        /* Menú de Píldoras */
-        .pill-menu { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 8px; 
-            margin-bottom: 20px; 
-            width: 100%; 
-            justify-content: center; 
-            background: var(--bg-pill); 
-            padding: 12px; 
-            border-radius: 25px; 
-            box-sizing: border-box;
-        }
-
-        .pill-btn { 
-            padding: 8px 16px; 
-            border-radius: 20px; 
-            border: none; 
-            background: transparent; 
-            font-weight: 600; 
-            font-size: 12px; 
-            cursor: pointer; 
-            color: #555; 
-            transition: 0.2s; 
-        }
-
-        .pill-btn:hover { background: rgba(255,255,255,0.5); }
-        .pill-btn.active { background: #fff; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-
-        /* Input de Álgebra */
         #algebra-input {
             width: 100%;
-            padding: 18px;
+            padding: 20px;
             border: 2px solid #ddd;
-            border-radius: 20px;
-            font-size: 20px;
+            border-radius: 5px 5px 20px 20px;
+            font-size: 22px;
             outline: none;
             text-align: center;
             font-family: 'Open Sans', sans-serif;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            margin-bottom: 30px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
         }
 
-        /* Área de Resultados */
-        .results-container {
-            width: 100%;
+        #algebra-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        /* Resultados */
+        .results-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 20px;
         }
 
-        .result-card {
-            background: white;
-            padding: 20px;
-            border-radius: 25px;
+        .card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 30px;
             text-align: center;
-            min-height: 120px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            min-height: 140px;
         }
 
-        .result-label {
-            font-size: 11px;
+        .card-label {
+            font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #999;
-            margin-bottom: 10px;
+            letter-spacing: 1.5px;
+            color: #aaa;
+            margin-bottom: 15px;
             font-weight: 700;
         }
 
-        #math-factor, #math-roots {
-            font-size: 18px;
-            color: var(--primary-color);
+        .math-text {
+            font-size: 20px;
+            color: #000;
         }
 
         @media (max-width: 600px) {
-            .results-container { grid-template-columns: 1fr; }
+            .results-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -176,84 +133,75 @@
     <div class="header">
         <h1>Factorizadora Pro</h1>
         <div class="main-subtitle">√(Raíz) Cuadrada²</div>
-        
-        <div class="controls">
-            <button class="btn-clear" onclick="clearAll()" title="Borrar todo">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            </button>
-            <input type="color" id="color-picker" style="display:none" onchange="updateColor(this.value)">
-            <div class="color-trigger" onclick="document.getElementById('color-picker').click()"></div>
-        </div>
     </div>
 
-    <div class="pill-menu">
-        <button class="pill-btn" onclick="setInput('x^2 - 16')">x² - 16</button>
-        <button class="pill-btn" onclick="setInput('x^2 + 6x + 9')">x² + 6x + 9</button>
-        <button class="pill-btn" onclick="setInput('2x^2 + 5x - 3')">2x² + 5x - 3</button>
-        <button class="pill-btn" onclick="setInput('x^3 - 8')">x³ - 8</button>
-        <button class="pill-btn" onclick="setInput('x^2 + 1')">x² + 1</button>
+    <div class="preview-area" id="input-preview">
+        $$ \text{Escribe un polinomio...} $$
     </div>
 
-    <input type="text" id="algebra-input" placeholder="Escribe tu expresión aquí..." oninput="solve()">
+    <input type="text" id="algebra-input" placeholder="Ej: x^2 + 5x + 6" autocomplete="off" oninput="process()">
 
-    <div class="results-container">
-        <div class="result-card">
-            <div class="result-label">Factorización</div>
-            <div id="math-factor">$$ ... $$</div>
+    <div class="results-grid">
+        <div class="card">
+            <div class="card-label">Factorización</div>
+            <div id="res-factor" class="math-text">$$ ... $$</div>
         </div>
-        <div class="result-card">
-            <div class="result-label">Raíces (Resolver x)</div>
-            <div id="math-roots">$$ ... $$</div>
+        <div class="card">
+            <div class="card-label">Solución (Raíces)</div>
+            <div id="res-roots" class="math-text">$$ ... $$</div>
         </div>
     </div>
 </div>
 
 <script>
-    function solve() {
-        const input = document.getElementById('algebra-input').value.trim();
-        const factorDiv = document.getElementById('math-factor');
-        const rootsDiv = document.getElementById('math-roots');
+    function process() {
+        const rawInput = document.getElementById('algebra-input').value.trim();
+        const preview = document.getElementById('input-preview');
+        const resFactor = document.getElementById('res-factor');
+        const resRoots = document.getElementById('res-roots');
 
-        if (!input) {
-            factorDiv.innerHTML = "$$ ... $$";
-            rootsDiv.innerHTML = "$$ ... $$";
+        if (!rawInput) {
+            preview.innerHTML = "$$ \\text{Escribe un polinomio...} $$";
+            resFactor.innerHTML = "$$ ... $$";
+            resRoots.innerHTML = "$$ ... $$";
             MathJax.typeset();
             return;
         }
 
+        // 1. Mostrar Preview de la entrada
+        preview.innerHTML = `\\[ ${rawInput} \\]`;
+
         try {
-            // Factorizar
-            let factored = Algebrite.factor(input).toString();
-            
-            // Resolver Raíces
-            let roots = Algebrite.roots(input).toString();
+            // 2. Ejecutar cálculos con Algebrite
+            // Forzamos a que trate la entrada como una expresión
+            let factorResult = Algebrite.run(`factor(${rawInput})`).toString();
+            let rootsResult = Algebrite.run(`roots(${rawInput})`).toString();
 
-            // Limpiar formato para MathJax
-            const format = (txt) => txt.replace(/\[|\]/g, '').replace(/\*/g, '').replace(/\^/g, '^');
+            // 3. Formatear para que MathJax no se rompa (quitar asteriscos y corchetes)
+            const clean = (str) => {
+                return str
+                    .replace(/\[/g, '\\{')
+                    .replace(/\]/g, '\\}')
+                    .replace(/\*/g, '')
+                    .replace(/\^/g, '^');
+            };
 
-            factorDiv.innerHTML = `\\[ ${format(factored)} \\]`;
-            rootsDiv.innerHTML = `\\[ x = ${format(roots)} \\]`;
+            resFactor.innerHTML = `\\[ ${clean(factorResult)} \\]`;
             
-            MathJax.typeset();
-        } catch (e) {
-            factorDiv.innerHTML = "<small style='color:red'>Error de sintaxis</small>";
+            // Si no hay raíces o es constante
+            if (rootsResult === "roots(" + rawInput + ")") {
+                resRoots.innerHTML = "\\( \\text{Sin raíces reales} \\)";
+            } else {
+                resRoots.innerHTML = `\\[ x = ${clean(rootsResult)} \\]`;
+            }
+
+        } catch (err) {
+            resFactor.innerHTML = "<small style='color:red'>Error en expresión</small>";
+            resRoots.innerHTML = "";
         }
-    }
 
-    function setInput(val) {
-        document.getElementById('algebra-input').value = val;
-        solve();
-    }
-
-    function clearAll() {
-        document.getElementById('algebra-input').value = '';
-        solve();
-    }
-
-    function updateColor(color) {
-        document.documentElement.style.setProperty('--primary-color', color);
-        document.querySelector('.color-trigger').style.background = color;
-        solve();
+        // Renderizar todo con MathJax
+        MathJax.typeset();
     }
 </script>
 
