@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -18,7 +17,7 @@
 
     <style>
         :root {
-            --bg-color: #ffffff; /* Fondo de la web blanco solicitado */
+            --bg-color: #ffffff;
             --container-bg: #F2F2F2;
             --white: #ffffff;
             --text-main: #1a1a1a;
@@ -38,7 +37,7 @@
             padding: 40px; 
             border-radius: 40px; 
             width: 100%; 
-            max-width: 600px; 
+            max-width: 650px; /* Un poco más ancho para las plantillas */
             box-shadow: 0 20px 40px rgba(0,0,0,0.06);
             display: flex;
             flex-direction: column;
@@ -59,7 +58,6 @@
             margin-top: 5px;
         }
 
-        /* Visor de Entrada */
         .preview-box {
             background: white;
             border: 1px solid #eee;
@@ -70,15 +68,14 @@
             justify-content: center;
             padding: 15px;
             font-size: 24px;
-            margin-bottom: 20px; /* Distancia con el input inferior */
+            margin-bottom: 25px; /* Distancia del visor al input */
         }
 
-        /* Input Principal */
         #algebra-input {
             width: 100%;
             padding: 20px;
             border: 1px solid #ccc;
-            border-radius: 25px; /* Redondeado completo para que parezca independiente */
+            border-radius: 25px;
             font-size: 22px;
             outline: none;
             text-align: center;
@@ -87,9 +84,7 @@
             margin-bottom: 25px;
             background: white;
         }
-        #algebra-input:focus { border-color: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
 
-        /* Tarjeta de Resultado */
         .result-card {
             background: var(--white);
             padding: 30px;
@@ -113,27 +108,56 @@
         }
 
         #output { font-size: 24px; color: #000; }
-        .error-text { color: #ff4757; font-size: 14px; font-weight: 600; }
 
-        /* Estilos de Píldoras y Teclado */
         .pills-nav { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
         .pill { 
             background: #e0e0e0; border: none; padding: 8px 16px; border-radius: 20px; 
             font-size: 13px; cursor: pointer; transition: 0.3s; font-weight: 600; 
-            color: #555; font-family: 'Open Sans', sans-serif; 
+            color: #555; 
         }
         .pill.active { background: white; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         .symbols-container { background: white; border-radius: 20px; padding: 15px; border: 1px solid #ddd; }
-        .symbols-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        
+        /* CORRECCIÓN: Aumentamos el minmax a 140px y permitimos que las filas crezcan */
+        .symbols-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 12px; 
+        }
+
         .sym-btn { 
-            background: white; border: 1px solid #efefef; padding: 15px 5px; border-radius: 12px; 
-            text-align: center; cursor: pointer; transition: 0.2s; font-size: 14px; color: #333;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: white; 
+            border: 1px solid #efefef; 
+            padding: 12px 8px; 
+            border-radius: 15px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            min-height: 80px; /* Altura mínima consistente */
+            word-break: break-all; /* Evita que el texto se salga */
         }
         .sym-btn:hover { background: #f8f8f8; border-color: #ccc; }
-        .sym-btn span { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-        .sym-btn small { font-size: 9px; text-transform: uppercase; color: #888; font-weight: 700; }
+        
+        /* CORRECCIÓN: Tamaño de fuente más balanceado */
+        .sym-btn span { 
+            font-size: 14px; 
+            font-weight: 600; 
+            margin-bottom: 6px; 
+            color: #333;
+            line-height: 1.2;
+        }
+        .sym-btn small { 
+            font-size: 9px; 
+            text-transform: uppercase; 
+            color: #888; 
+            font-weight: 700; 
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -170,9 +194,8 @@
     const preview = document.getElementById('preview');
     const output = document.getElementById('output');
 
-    // Configuración de Categorías
     const categorias = {
-       principales: [
+             principales: [
         { s: '(', t: 'ABRIR (' }, 
         { s: ')', t: 'CERRAR )' },
         { s: '+', t: 'SUMA' }, 
@@ -214,68 +237,47 @@
     { s: '(x+a)*(x+b)*(x+c)', t: 'Prod. Notables' },
     { s: 'x^2+y^2+z^2+2*x*y+2*x*z+2*y*z', t: 'Trinomio^2' }
 ]
+     
     };
 
     function showCategory(cat, btn) {
-        // Actualizar UI de píldoras
         document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
-
-        // Renderizar botones
         const grid = document.getElementById('grid-content');
         grid.innerHTML = '';
         categorias[cat].forEach(item => {
             const div = document.createElement('div');
             div.className = 'sym-btn';
             div.innerHTML = `<span>${item.s}</span><small>${item.t}</small>`;
-            div.onclick = () => insertarSimbolo(item.s);
+            div.onclick = () => {
+                const pos = input.selectionStart;
+                input.value = input.value.slice(0, pos) + item.s + input.value.slice(pos);
+                input.focus();
+                input.dispatchEvent(new Event('input'));
+            };
             grid.appendChild(div);
         });
     }
 
-    function insertarSimbolo(s) {
-        const pos = input.selectionStart;
-        const texto = input.value;
-        input.value = texto.slice(0, pos) + s + texto.slice(pos);
-        input.focus();
-        // Disparar el evento input manualmente para actualizar la factorización
-        input.dispatchEvent(new Event('input'));
-    }
-
     input.addEventListener('input', () => {
         const val = input.value.trim();
-
         if (!val) {
             preview.innerHTML = "\\( \\dots \\)";
             output.innerHTML = "\\( \\dots \\)";
             return;
         }
-
         try {
-            // 1. Mostrar Preview
-            let previewText = val.replace(/sqrt/g, '\\sqrt');
-            preview.innerHTML = `\\[ ${previewText} \\]`;
-
-            // 2. Factorizar con Nerdamer
+            preview.innerHTML = `\\[ ${val.replace(/sqrt/g, '\\sqrt')} \\]`;
             let expression = nerdamer(val).simplify();
             let factored = nerdamer.factor(expression);
-
-            // 3. Mostrar Resultado
             output.innerHTML = `\\[ ${factored.toTeX()} \\]`;
-
         } catch (e) {
-            output.innerHTML = "<span class='error-text'>Esperando expresión válida...</span>";
+            output.innerHTML = "<span style='color:#ff4757;font-size:14px;'>Esperando expresión válida...</span>";
         }
-
-        if (window.MathJax) {
-            MathJax.typesetPromise();
-        }
+        if (window.MathJax) MathJax.typesetPromise();
     });
 
-    // Inicializar primera categoría
-    window.onload = () => {
-        showCategory('principales', document.querySelector('.pill'));
-    };
+    window.onload = () => showCategory('principales', document.querySelector('.pill'));
 </script>
 
 </body>
