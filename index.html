@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,7 +18,7 @@
 
     <style>
         :root {
-            --bg-color: #F8F9FA;
+            --bg-color: #ffffff; /* Fondo de la web blanco solicitado */
             --container-bg: #F2F2F2;
             --white: #ffffff;
             --text-main: #1a1a1a;
@@ -60,31 +61,33 @@
 
         /* Visor de Entrada */
         .preview-box {
-            background: rgba(255,255,255,0.7);
-            border: 1px dashed #bbb;
-            border-radius: 25px 25px 0 0;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 25px;
             min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 15px;
             font-size: 24px;
+            margin-bottom: 20px; /* Distancia con el input inferior */
         }
 
         /* Input Principal */
         #algebra-input {
             width: 100%;
             padding: 20px;
-            border: 2px solid #ddd;
-            border-radius: 0 0 25px 25px;
+            border: 1px solid #ccc;
+            border-radius: 25px; /* Redondeado completo para que parezca independiente */
             font-size: 22px;
             outline: none;
             text-align: center;
             box-sizing: border-box;
             transition: 0.3s;
             margin-bottom: 25px;
+            background: white;
         }
-        #algebra-input:focus { border-color: #000; background: #fff; }
+        #algebra-input:focus { border-color: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
 
         /* Tarjeta de Resultado */
         .result-card {
@@ -97,6 +100,7 @@
             flex-direction: column;
             justify-content: center;
             box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+            margin-bottom: 30px;
         }
 
         .label {
@@ -109,8 +113,27 @@
         }
 
         #output { font-size: 24px; color: #000; }
-        
         .error-text { color: #ff4757; font-size: 14px; font-weight: 600; }
+
+        /* Estilos de Píldoras y Teclado */
+        .pills-nav { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .pill { 
+            background: #e0e0e0; border: none; padding: 8px 16px; border-radius: 20px; 
+            font-size: 13px; cursor: pointer; transition: 0.3s; font-weight: 600; 
+            color: #555; font-family: 'Open Sans', sans-serif; 
+        }
+        .pill.active { background: white; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .symbols-container { background: white; border-radius: 20px; padding: 15px; border: 1px solid #ddd; }
+        .symbols-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .sym-btn { 
+            background: white; border: 1px solid #efefef; padding: 15px 5px; border-radius: 12px; 
+            text-align: center; cursor: pointer; transition: 0.2s; font-size: 14px; color: #333;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .sym-btn:hover { background: #f8f8f8; border-color: #ccc; }
+        .sym-btn span { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+        .sym-btn small { font-size: 9px; text-transform: uppercase; color: #888; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -125,11 +148,20 @@
         \( \dots \)
     </div>
 
-    <input type="text" id="algebra-input" placeholder="Ej: x^2 + 6x + 9 o sqrt(x^2-1)" autocomplete="off">
+    <input type="text" id="algebra-input" placeholder="Ej: x^2 + 6x + 9" autocomplete="off">
 
     <div class="result-card">
         <div class="label">Factorización</div>
         <div id="output">\( \dots \)</div>
+    </div>
+
+    <div class="pills-nav">
+        <button class="pill active" onclick="showCategory('principales', this)">Principales</button>
+        <button class="pill" onclick="showCategory('plantillas', this)">Plantillas</button>
+    </div>
+
+    <div id="symbolsPanel" class="symbols-container">
+        <div id="grid-content" class="symbols-grid"></div>
     </div>
 </div>
 
@@ -137,6 +169,78 @@
     const input = document.getElementById('algebra-input');
     const preview = document.getElementById('preview');
     const output = document.getElementById('output');
+
+    // Configuración de Categorías
+    const categorias = {
+       principales: [
+        { s: '(', t: 'ABRIR (' }, 
+        { s: ')', t: 'CERRAR )' },
+        { s: '+', t: 'SUMA' }, 
+        { s: '-', t: 'RESTA' },
+        { s: '*', t: 'MULT.' }, 
+        { s: '/', t: 'DIV.' },
+        { s: '( )/( )', t: 'FRACCIÓN' }, 
+        { s: '^', t: 'POTENCIA' },
+        { s: 'sqrt()', t: 'RAÍZ (√)' }, 
+        { s: '^(1/ )', t: 'RAÍZ N' },
+        { s: 'x', t: 'VAR X' }, 
+        { s: 'y', t: 'VAR Y' },
+        { s: 'pi', t: 'PI' }, 
+        { s: 'e', t: 'EULER' },
+        { s: 'inf', t: 'INFINITO' }, 
+        { s: '-inf', t: '- INFINITO' },
+        { s: 'abs()', t: 'ABS.' }, 
+        { s: '!', t: 'FACT.' }
+    ],
+       plantillas: [
+    // BÁSICAS Y TRINOMIOS
+    { s: 'a*x+a*y', t: 'Factor Común' },
+    { s: 'x^2+b*x+c', t: 'Trinomio Simple' },
+    { s: 'a*x^2+b*x+c', t: 'Trinomio Gral.' },
+    { s: 'x^2+2*a*x+a^2', t: 'Trinomio C.P.' },
+    
+    // DIFERENCIAS Y SUMAS
+    { s: 'x^2-a^2', t: 'Dif. Cuadrados' },
+    { s: 'x^3-a^3', t: 'Dif. Cubos' },
+    { s: 'x^3+a^3', t: 'Suma Cubos' },
+    { s: 'x^n-a^n', t: 'Dif. Potencias' },
+
+    // CUBOS Y AGRUPACIÓN
+    { s: 'x^3+3*a*x^2+3*a^2*x+a^3', t: 'Cubo Perfecto' },
+    { s: 'a*x+b*x+a*y+b*y', t: 'Agrupación' },
+    
+    // FORMAS AVANZADAS
+    { s: 'x^4+a*x^2+b', t: 'Bicuadrada' },
+    { s: '(x+a)*(x+b)*(x+c)', t: 'Prod. Notables' },
+    { s: 'x^2+y^2+z^2+2*x*y+2*x*z+2*y*z', t: 'Trinomio^2' }
+]
+    };
+
+    function showCategory(cat, btn) {
+        // Actualizar UI de píldoras
+        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Renderizar botones
+        const grid = document.getElementById('grid-content');
+        grid.innerHTML = '';
+        categorias[cat].forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'sym-btn';
+            div.innerHTML = `<span>${item.s}</span><small>${item.t}</small>`;
+            div.onclick = () => insertarSimbolo(item.s);
+            grid.appendChild(div);
+        });
+    }
+
+    function insertarSimbolo(s) {
+        const pos = input.selectionStart;
+        const texto = input.value;
+        input.value = texto.slice(0, pos) + s + texto.slice(pos);
+        input.focus();
+        // Disparar el evento input manualmente para actualizar la factorización
+        input.dispatchEvent(new Event('input'));
+    }
 
     input.addEventListener('input', () => {
         const val = input.value.trim();
@@ -148,28 +252,30 @@
         }
 
         try {
-            // 1. Mostrar Preview (convertimos sqrt para que MathJax lo entienda mejor)
+            // 1. Mostrar Preview
             let previewText = val.replace(/sqrt/g, '\\sqrt');
             preview.innerHTML = `\\[ ${previewText} \\]`;
 
             // 2. Factorizar con Nerdamer
-            // nerdamer.simplify ayuda a resolver potencias como (4+3) antes de factorizar
             let expression = nerdamer(val).simplify();
             let factored = nerdamer.factor(expression);
 
-            // 3. Mostrar Resultado en formato LaTeX
+            // 3. Mostrar Resultado
             output.innerHTML = `\\[ ${factored.toTeX()} \\]`;
 
         } catch (e) {
-            // Error silencioso mientras el usuario termina de escribir
             output.innerHTML = "<span class='error-text'>Esperando expresión válida...</span>";
         }
 
-        // Actualizar el renderizado de MathJax
         if (window.MathJax) {
             MathJax.typesetPromise();
         }
     });
+
+    // Inicializar primera categoría
+    window.onload = () => {
+        showCategory('principales', document.querySelector('.pill'));
+    };
 </script>
 
 </body>
